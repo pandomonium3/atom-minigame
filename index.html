@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atma2Atma – Mini Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Nunito:wght@400;600;700;800&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --baby-blue: #c8e6f5;
+        --blue-light: #e8f4fd;
+        --blue-mid: #a8d4ec;
+        --blue-deep: #5ba3cc;
+        --blue-dark: #2e7ba8;
+        --pink: #f7c5d5;
+        --pink-deep: #e896b4;
+        --yellow: #fff3b0;
+        --yellow-deep: #f7d060;
+        --mint: #b8edd8;
+        --lavender: #d8c8f0;
+        --peach: #ffd4b8;
+        --white: #fefefe;
+        --text-dark: #2c3e50;
+        --text-mid: #5a6a7a;
+        --shadow: rgba(90, 163, 204, 0.18);
+        --font-hand: 'Caveat', cursive;
+        --font-dance: 'Dancing Script', cursive;
+        --font-body: 'Nunito', sans-serif;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 20% 30%, rgba(200, 230, 245, 0.5) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(247, 197, 213, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 50% 50%, rgba(255, 243, 176, 0.2) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* PROGRESS BAR */
+      #progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--blue-deep), var(--pink-deep), var(--yellow-deep));
+        transform-origin: left;
+        transform: scaleX(0);
+        transition: transform 0.5s ease;
+        z-index: 1000;
+      }
+
+      /* SECTIONS */
+      .section {
+        display: none;
+        min-height: 100vh;
+        padding: 20px 16px 60px;
+        position: relative;
+        z-index: 1;
+        animation: fadeSlideIn 0.5s ease forwards;
+      }
+      .section.active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      @keyframes fadeSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* TYPOGRAPHY */
+      .page-title {
+        font-family: var(--font-body);
+        font-size: clamp(2rem, 8vw, 3.2rem);
+        color: var(--blue-dark);
+        text-align: center;
+        margin-bottom: 6px;
+        line-height: 1.1;
+      }
+      .page-title img {
+        width: clamp(150px, 30vw, 350px);
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      }
+      .page-subtitle {
+        font-family: var(--font-body);
+        font-weight: bold;
+        font-size: clamp(1rem, 4vw, 1.3rem);
+        color: var(--text-mid);
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      /* BUTTONS */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 32px;
+        border-radius: 50px;
+        border: none;
+        cursor: pointer;
+        font-family: var(--font-body);
+        font-size: 1rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--blue-deep), var(--blue-dark));
+        color: white;
+        box-shadow: 0 4px 16px rgba(91, 163, 204, 0.4);
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(91, 163, 204, 0.5);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-outline {
+        background: white;
+        color: var(--blue-dark);
+        border: 2px solid var(--blue-deep);
+      }
+      .btn-outline:hover {
+        background: var(--baby-blue);
+      }
+
+      /* CARD */
+      .card {
+        background: white;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow:
+          0 8px 32px var(--shadow),
+          0 2px 8px rgba(0, 0, 0, 0.06);
+        width: 100%;
+        max-width: 520px;
+        position: relative;
+      }
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        border-radius: 18px 18px 0 0;
+        background: linear-gradient(90deg, var(--blue-deep), var(--pink-deep));
+      }
+
+      /* PROGRESS DOTS */
+      .progress-dots {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--blue-mid);
+        transition: all 0.3s;
+      }
+      .dot.done {
+        background: var(--blue-dark);
+        transform: scale(1.2);
+      }
+      .dot.active {
+        background: var(--pink-deep);
+        transform: scale(1.3);
+      }
+
+      /* ========================
+        SECTION 1 – WELCOME
+        ======================== */
+      #sec-welcome {
+        justify-content: center;
+        gap: 20px;
+        background: linear-gradient(160deg, var(--blue-light) 0%, var(--baby-blue) 50%, var(--pink) 100%);
+      }
+      .welcome-art {
+        width: 160px;
+        height: 160px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        box-shadow:
+          0 12px 40px var(--shadow),
+          inset 0 0 0 8px var(--baby-blue);
+        animation: popIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      @keyframes popIn {
+        from {
+          transform: scale(0) rotate(-20deg);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1) rotate(0deg);
+          opacity: 1;
+        }
+      }
+      .welcome-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        max-width: 480px;
+      }
+      .step-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        border-radius: 14px;
+        padding: 12px 16px;
+        box-shadow: 0 2px 12px var(--shadow);
+      }
+      .step-num {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--blue-deep), var(--blue-dark));
+        color: white;
+        font-weight: 800;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .step-text {
+        font-size: 0.9rem;
+        color: var(--text-mid);
+      }
+
+      /* ========================
+        SECTION 2 – THIS OR THAT
+        ======================== */
+      #sec-game {
+        background: linear-gradient(160deg, var(--baby-blue), var(--yellow) 80%);
+        gap: 20px;
+      }
+      .tot-card {
+        background: white;
+        border-radius: 24px;
+        padding: 28px 20px;
+        box-shadow: 0 12px 40px var(--shadow);
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        overflow: hidden;
+      }
+      .tot-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--pink-deep), var(--yellow-deep), var(--blue-deep));
+      }
+      .tot-question {
+        font-family: var(--font-body);
+        font-size: clamp(1.3rem, 5vw, 1.8rem);
+        text-align: center;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+        line-height: 1.3;
+      }
+      .tot-or {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-body);
+        font-size: 1.4rem;
+        color: var(--blue-dark);
+        margin: 8px 0;
+      }
+      .tot-or::before,
+      .tot-or::after {
+        content: '';
+        flex: 1;
+        height: 1.5px;
+        background: linear-gradient(90deg, transparent, var(--blue-mid));
+      }
+      .tot-or::after {
+        background: linear-gradient(270deg, transparent, var(--blue-mid));
+      }
+      .tot-or span {
+        padding: 0 10px;
+      }
+      .tot-choices {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .tot-btn {
+        padding: 14px 10px;
+        border-radius: 18px;
+        border: 2.5px solid transparent;
+        cursor: pointer;
+        font-family: var(--font-body);
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        background: none;
+      }
+      .tot-btn:nth-child(1) {
+        background: var(--pink);
+        border-color: var(--pink-deep);
+        color: #8b3060;
+      }
+      .tot-btn:nth-child(2) {
+        background: var(--baby-blue);
+        border-color: var(--blue-deep);
+        color: var(--blue-dark);
+      }
+      .tot-btn:hover {
+        transform: scale(1.04);
+      }
+      .tot-btn.chosen {
+        transform: scale(1.07);
+        box-shadow: 0 6px 20px var(--shadow);
+      }
+      /* ToT image containers */
+      .tot-img-box {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.05);
+      }
+      .tot-img-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+      .tot-img-ph {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.07);
+        border: 2px dashed rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.6rem;
+        color: rgba(0, 0, 0, 0.35);
+        text-align: center;
+        line-height: 1.3;
+        padding: 4px;
+      }
+
+      /* ========================
+        SECTION 3 – CUSTOMIZE
+        ======================== */
+      #sec-customize {
+        background: linear-gradient(160deg, var(--lavender), var(--baby-blue) 80%);
+        gap: 16px;
+      }
+      .section-label {
+        font-family: var(--font-hand);
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--blue-dark);
+        margin-top: 12px;
+        margin-bottom: 4px;
+      }
+      .color-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        margin: 8px 0;
+      }
+      .color-swatch {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.2s;
+        position: relative;
+      }
+      .color-swatch.selected {
+        transform: scale(1.15);
+        border-color: var(--text-dark);
+      }
+      .color-swatch.selected::after {
+        content: '✓';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: white;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      }
+      /* PNG sticker grid */
+      .sticker-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin: 8px 0;
+      }
+      .sticker-btn {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 14px;
+        border: 2.5px solid var(--blue-mid);
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .sticker-btn:hover {
+        transform: scale(1.06);
+        border-color: var(--blue-deep);
+        background: var(--blue-light);
+      }
+      .sticker-btn.picked {
+        border-color: var(--pink-deep);
+        box-shadow: 0 0 0 3px var(--pink);
+        transform: scale(1.07);
+      }
+      .sticker-btn img {
+        width: 76%;
+        height: 76%;
+        object-fit: contain;
+      }
+      .sticker-ph {
+        width: 70%;
+        height: 70%;
+        border-radius: 8px;
+        background: var(--blue-light);
+        border: 1.5px dashed var(--blue-mid);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.5rem;
+        color: var(--text-mid);
+        text-align: center;
+        line-height: 1.3;
+        padding: 3px;
+      }
+      .sticker-check {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--pink-deep);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 800;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .sticker-btn.picked .sticker-check {
+        display: flex;
+      }
+
+      /* ========================
+        SECTION 4 – QUIZ
+        ======================== */
+      #sec-quiz {
+        background: linear-gradient(160deg, var(--mint), var(--baby-blue) 70%);
+        gap: 20px;
+      }
+      .quiz-card {
+        background: white;
+        border-radius: 24px;
+        padding: 28px 20px;
+        box-shadow: 0 12px 40px var(--shadow);
+        width: 100%;
+        max-width: 480px;
+      }
+      .quiz-q-num {
+        font-family: var(--font-body);
+        font-size: 0.95rem;
+        color: var(--blue-deep);
+        margin-bottom: 6px;
+        text-align: center;
+      }
+      .quiz-question {
+        font-family: var(--font-body);
+        font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+        text-align: center;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+        line-height: 1.4;
+      }
+      /* Radio-style options */
+      .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .quiz-opt-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 2px solid var(--blue-mid);
+        background: var(--blue-light);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        -webkit-tap-highlight-color: transparent;
+      }
+      .quiz-opt-label:hover {
+        background: var(--baby-blue);
+        border-color: var(--blue-deep);
+        transform: translateX(3px);
+      }
+      .quiz-opt-label input[type='checkbox'] {
+        display: none;
+      }
+      .checkbox-box {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        border: 2.5px solid var(--blue-mid);
+        background: white;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        border-radius: 4px;
+      }
+      .checkbox-check {
+        width: 12px;
+        height: 12px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        color: white;
+        font-weight: 800;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .quiz-opt-label.is-checked {
+        background: var(--baby-blue);
+        border-color: var(--blue-deep);
+      }
+      .quiz-opt-label.is-checked .checkbox-box {
+        background: var(--blue-deep);
+        border-color: var(--blue-dark);
+      }
+      .quiz-opt-label.is-checked .checkbox-check {
+        opacity: 1;
+      }
+      .quiz-nav {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 16px;
+        flex-wrap: wrap;
+      }
+
+      /* ========================
+        SECTION 5 – RESULT
+        ======================== */
+      #sec-result {
+        background: linear-gradient(160deg, var(--baby-blue), var(--pink) 80%);
+        gap: 20px;
+        padding-bottom: 60px;
+      }
+      #scrapbook {
+        width: 100%;
+        max-width: 520px;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 16px 60px rgba(0, 0, 0, 0.18);
+        position: relative;
+      }
+      .sb-paper {
+        padding: 28px 22px;
+        position: relative;
+        min-height: 580px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      .sb-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.72);
+        z-index: 0;
+        pointer-events: none;
+      }
+      .sb-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .sb-content > * {
+        width: 100%;
+      }
+      .sb-content > .sb-photo-frame {
+        width: 160px;
+      }
+      .sb-header {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+      .sb-title {
+        font-family: var(--font-dance);
+        font-size: 2rem;
+        color: var(--blue-dark);
+        margin-bottom: 4px;
+      }
+      .sb-subtitle {
+        font-family: var(--font-hand);
+        font-size: 1.1rem;
+        color: var(--text-mid);
+      }
+      .sb-photo-frame {
+        width: 160px;
+        height: 180px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+      }
+      .sb-photo-frame img {
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .sb-member-name {
+        font-family: var(--font-dance);
+        font-size: 1.8rem;
+        text-align: center;
+        color: var(--blue-dark);
+        margin-bottom: 6px;
+      }
+      .sb-match-desc {
+        text-align: center;
+        font-family: var(--font-hand);
+        font-size: 1rem;
+        color: var(--text-mid);
+        margin-bottom: 14px;
+      }
+      .sb-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+        margin-bottom: 14px;
+      }
+      .sb-tag {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-family: var(--font-hand);
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+      .sb-washi {
+        height: 14px;
+        border-radius: 3px;
+        margin: 8px 0;
+        opacity: 0.85;
+      }
+      .sb-color-strip {
+        height: 6px;
+        border-radius: 3px;
+        margin: 4px 0;
+      }
+      /* ToT photo section */
+      .sb-tot-section {
+        margin-bottom: 14px;
+      }
+      .sb-tot-title {
+        font-family: var(--font-hand);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--blue-dark);
+        margin-bottom: 8px;
+        text-align: center;
+      }
+      .sb-tot-photos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+      }
+      .sb-tot-item {
+        position: relative;
+      }
+      .sb-tot-photo {
+        width: 54px;
+        height: 54px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        user-select: none;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+      }
+      .sb-tot-photo:active {
+        cursor: grabbing;
+      }
+      .sb-tot-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .sb-tot-photo-ph {
+        width: 54px;
+        height: 54px;
+        border-radius: 10px;
+        background: var(--blue-light);
+        border: 2px dashed var(--blue-mid);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.5rem;
+        color: var(--text-mid);
+        text-align: center;
+        padding: 3px;
+        line-height: 1.2;
+      }
+      .sb-tot-lbl {
+        font-family: var(--font-hand);
+        font-size: 0.75rem;
+        color: var(--text-mid);
+        text-align: center;
+        max-width: 60px;
+        line-height: 1.1;
+      }
+      /* Draggable stickers */
+      .sb-sticker {
+        position: absolute;
+        width: 56px;
+        height: 56px;
+        cursor: grab;
+        user-select: none;
+        z-index: 10;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+      }
+      .sb-sticker:active {
+        cursor: grabbing;
+      }
+      .sb-sticker img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .sb-sticker-ph {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        background: rgba(200, 230, 245, 0.6);
+        border: 2px dashed var(--blue-mid);
+      }
+      /* Share */
+      .share-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 16px;
+      }
+      .share-note {
+        font-family: var(--font-body);
+        font-size: 0.9rem;
+        color: var(--text-mid);
+        text-align: center;
+        margin-top: 6px;
+      }
+
+      /* CONFETTI */
+      #confetti-container {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9999;
+        overflow: hidden;
+      }
+      .confetti-piece {
+        position: absolute;
+        top: -20px;
+        border-radius: 2px;
+        animation: confettiFall linear forwards;
+      }
+      @keyframes confettiFall {
+        from {
+          transform: translateY(0) rotate(0deg);
+          opacity: 1;
+        }
+        to {
+          transform: translateY(110vh) rotate(720deg);
+          opacity: 0;
+        }
+      }
+
+      /* RESPONSIVE */
+      @media (max-width: 400px) {
+        .tot-choices {
+          grid-template-columns: 1fr;
+        }
+        .color-grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+        .sticker-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      @media (min-width: 768px) {
+        .section {
+          padding: 40px 24px 60px;
+        }
+        .tot-img-box,
+        .tot-img-ph {
+          width: 100px;
+          height: 100px;
+        }
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  </head>
+  <body>
+    <div id="progress-bar"></div>
+    <div id="confetti-container"></div>
+
+    <!-- SECTION 1: WELCOME -->
+    <section id="sec-welcome" class="section active">
+      <div class="page-title"><img src="atom.png" alt="Atma2Atma" style="max-width: 100%; height: auto" /></div>
+      <p class="page-subtitle">Who's your match?</p>
+      <button class="btn btn-primary" style="margin-top: 14px" onclick="goTo('sec-game')">Let's Start!</button>
+    </section>
+
+    <!-- SECTION 2: THIS OR THAT -->
+    <section id="sec-game" class="section">
+      <div class="page-title">This or That?</div>
+      <p class="page-subtitle">Go with your gut!</p>
+      <div class="progress-dots" id="tot-dots"></div>
+      <div class="tot-card">
+        <div class="tot-question" id="tot-q">Loading...</div>
+        <div class="tot-or"><span>OR</span></div>
+        <div class="tot-choices">
+          <button class="tot-btn" id="tot-btn-a" onclick="pickTot(0)">
+            <div id="tot-img-a"></div>
+            <span id="tot-label-a"></span>
+          </button>
+          <button class="tot-btn" id="tot-btn-b" onclick="pickTot(1)">
+            <div id="tot-img-b"></div>
+            <span id="tot-label-b"></span>
+          </button>
+        </div>
+      </div>
+      <p id="tot-count" style="font-family: var(--font-hand); color: var(--text-mid); font-size: 0.9rem; text-align: center"></p>
+    </section>
+
+    <!-- SECTION 3: CUSTOMIZE -->
+    <section id="sec-customize" class="section">
+      <div class="page-title">Decorate!</div>
+      <p class="page-subtitle">Choose your scrapbook vibe:</p>
+      <div class="card" style="max-width: 520px">
+        <p class="section-label">Pick your color theme:</p>
+        <div class="color-grid" id="color-grid"></div>
+        <p class="section-label">Pick up to 5 stickers:</p>
+        <div class="sticker-grid" id="sticker-grid"></div>
+        <p id="sticker-hint" style="font-family: var(--font-hand); color: var(--text-mid); font-size: 0.85rem; margin-top: 6px; text-align: center">0 / 5 selected</p>
+      </div>
+      <button class="btn btn-primary" id="customize-next" onclick="goToQuiz()" style="margin-top: 10px" disabled>Almost there</button>
+    </section>
+
+    <!-- SECTION 4: QUIZ -->
+    <section id="sec-quiz" class="section">
+      <div class="page-title">Who's your match?</div>
+      <p class="page-subtitle">Pick one answer per question</p>
+      <div class="progress-dots" id="quiz-dots"></div>
+      <div class="quiz-card">
+        <div class="quiz-q-num" id="quiz-num"></div>
+        <div class="quiz-question" id="quiz-q"></div>
+        <div class="quiz-options" id="quiz-opts"></div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn btn-outline" id="quiz-prev" onclick="quizPrev()">← Back</button>
+        <button class="btn btn-primary" id="quiz-next" onclick="quizNext()" disabled>Next →</button>
+      </div>
+    </section>
+
+    <!-- SECTION 5: RESULT -->
+    <section id="sec-result" class="section">
+      <div class="page-title">Your Match!</div>
+      <p class="page-subtitle">Your personalized scrapbook</p>
+      <div id="scrapbook">
+        <div class="sb-paper" id="sb-paper">
+          <div class="sb-overlay"></div>
+          <div class="sb-content" id="sb-content"></div>
+        </div>
+      </div>
+      <div class="share-row">
+        <button class="btn btn-primary" onclick="restartAll()">Play Again</button>
+      </div>
+      <p class="share-note">© 2026 Developed by Steve for Atma2Atma. All rights reserved.</p>
+    </section>
+
+    <script>
+      /* ===========================
+            DATA — EDIT THESE!
+            =========================== */
+
+      // ToT questions — setiap pilihan punya trait tersendiri
+      const TOT_QUESTIONS = [
+        { q: 'Coffee or Tea?', a: 'Coffee', aImg: 'tot/coffee.png', aTrait: [1, 3, 6, 9, 10], b: 'Tea', bImg: 'tot/tea.png', bTrait: [2, 4, 5, 7, 8] },
+        { q: 'Beach or Mountains?', a: 'Beach', aImg: 'tot/beach.png', aTrait: [2, 4, 5, 7, 10], b: 'Mountains', bImg: 'tot/mountains.png', bTrait: [1, 3, 6, 9, 8] },
+        { q: 'Night Owl or Early Bird?', a: 'Night Owl', aImg: 'tot/nightowl.png', aTrait: [1, 2, 3, 6, 7, 9], b: 'Early Bird', bImg: 'tot/earlybird.png', bTrait: [4, 5, 8, 10] },
+        { q: 'Words of Affirmation or Quality Time?', a: 'Words of Affirmation', aImg: 'tot/affirmation.png', aTrait: [6, 7, 9, 10], b: 'Quality Time', bImg: 'tot/time.png', bTrait: [1, 2, 3, 4, 5, 8] },
+        { q: 'Sweet or Savory?', a: 'Sweet', aImg: 'tot/sweet.png', aTrait: [1, 2, 4, 5, 6, 7], b: 'Savory', bImg: 'tot/savory.png', bTrait: [3, 8, 9, 10] },
+        { q: 'Stay in or Go out?', a: 'Stay in', aImg: 'tot/stayin.png', aTrait: [2, 3, 5, 7, 10], b: 'Go out', bImg: 'tot/goout.png', bTrait: [1, 4, 6, 8, 9] },
+        { q: 'Movies or Books?', a: 'Movies', aImg: 'tot/movies.png', aTrait: [1, 2, 3, 5, 6, 8, 9], b: 'Books', bImg: 'tot/books.png', bTrait: [4, 7, 10] },
+        { q: 'Rainy day or Sunny day?', a: 'Rainy', aImg: 'tot/rainy.png', aTrait: [1, 5, 8, 9], b: 'Sunny', bImg: 'tot/sunny.png', bTrait: [2, 3, 4, 6, 7, 10] },
+      ];
+
+      const QUIZ_QUESTIONS = [
+        {
+          q: 'Kalau online, kamu ngapain?',
+          opts: [
+            { text: 'UPCHARR, NUMB 1!!!', members: [4, 5, 6] },
+            { text: 'Interaksi sama orang-orang', members: [1, 6, 0] },
+            { text: 'Just scrolling, lalu kirim ke roomchat', members: [2, 5, 8] },
+            { text: 'Hanya muncul (absen) lalu menghilang', members: [3, 7, 9] },
+          ],
+        },
+        {
+          q: 'Ketika lagi senang, kamu ngapain?',
+          opts: [
+            { text: 'Cerita ke temen-temen', members: [2, 5, 8, 1] },
+            { text: 'Keep it lowkey #nonchalant abis', members: [7, 9] },
+            { text: 'Cerita di X (simpen sendiri)', members: [1, 3, 7] },
+            { text: 'Bikin notes atau story', members: [4, 5, 0] },
+          ],
+        },
+        {
+          q: 'If your profile had a soul, what would it feel like?',
+          opts: [
+            { text: 'Soft and dreamy, like morning mist', members: [1, 2, 4] },
+            { text: 'Bold and bright, like fireworks in the dark', members: [0, 6] },
+            { text: 'Wild and free, like waves chasing the shore', members: [5, 8] },
+            { text: 'Deep and mysterious, like midnight oceans', members: [3, 7, 9] },
+          ],
+        },
+        {
+          q: 'Jika ada update, kamu tipe orang yang gimana?',
+          opts: [
+            { text: 'Mengumpulkan mood', members: [2, 6, 0] },
+            { text: 'Mending updatenya di tabung dulu', members: [3, 8] },
+            { text: 'Gerak cepat kalau ada update', members: [1, 4, 5, 0] },
+            { text: 'Pengen update, tapi mager', members: [7, 9, 0] },
+          ],
+        },
+        {
+          q: 'Pick a vibe for your dream life:',
+          opts: [
+            { text: 'Soft, aesthetic, calm', members: [1, 4, 7] },
+            { text: 'Big, bold, iconic', members: [6, 0] },
+            { text: 'Free, spontaneous, chaotic', members: [2, 5, 8] },
+            { text: 'Mysterious, deep, artistic', members: [3, 9, 0] },
+          ],
+        },
+      ];
+
+      // 10 members
+      const MEMBERS = [
+        {
+          name: 'Juwita',
+          desc: 'Nurturing & bubbly',
+          traits: ['caring', 'cheerful', 'encouraging'],
+          color: '#F7C5D5', // pastel pink
+          photo: 'members/juwita.png',
+        },
+
+        {
+          id: 2,
+          name: 'Mentari',
+          desc: 'Trustworthy & unexpected',
+          traits: ['reliable', 'adaptable', 'insightful'],
+          color: '#B8EDD8', // pastel mint
+          photo: 'members/mentari.png',
+        },
+
+        {
+          id: 3,
+          name: 'Judistia',
+          desc: 'Flawless & playful',
+          traits: ['confident', 'stylish', 'lighthearted'],
+          color: '#D8C8F0', // pastel lavender
+          photo: 'members/judi.png',
+        },
+
+        {
+          id: 4,
+          name: 'Sekar',
+          desc: 'Adorable & cheerful',
+          traits: ['friendly', 'optimistic', 'bright'],
+          color: '#FFD4B8', // pastel peach
+          photo: 'members/sekar.png',
+        },
+
+        {
+          id: 5,
+          name: 'Kael',
+          desc: 'Silly (lovingly) & talkative',
+          traits: ['humorous', 'expressive', 'energetic'],
+          color: '#FFF3B0', // pastel yellow
+          photo: 'members/kael.png',
+        },
+
+        {
+          id: 6,
+          name: 'Junia',
+          desc: 'Enthusiast & charismatic',
+          traits: ['confident', 'motivating', 'outgoing'],
+          color: '#C8E6F5', // pastel sky blue
+          photo: 'members/junia.png',
+        },
+
+        {
+          id: 7,
+          name: 'Gadisha',
+          desc: 'Lovable & radiant',
+          traits: ['warm', 'positive', 'kindhearted'],
+          color: '#A8D4EC', // pastel soft blue
+          photo: 'members/gadisha.png',
+        },
+
+        {
+          id: 8,
+          name: 'Ansaira',
+          desc: 'Fun loving & unstoppable',
+          traits: ['determined', 'bold', 'adventurous'],
+          color: '#C7F0DB', // pastel fresh green
+          photo: 'members/sai.png',
+        },
+
+        {
+          id: 9,
+          name: 'Zack', // Kak Jack
+          desc: 'Playful & reliable',
+          traits: ['dependable', 'fun', 'steady'],
+          color: '#2F3A56', // dark blue-gray (lebih gelap sesuai request)
+          photo: 'members/zack.png',
+        },
+
+        {
+          id: 0,
+          name: 'Steve',
+          desc: 'Affectionate & warmhearted',
+          traits: ['loyal', 'gentle', 'supportive'],
+          color: '#4A2C40', // dark plum (gelap tapi hangat)
+          photo: 'members/steve.png',
+        },
+      ];
+
+      // Color swatches
+      const COLORS = [
+        { name: 'Baby Blue', hex: '#C8E6F5' },
+        { name: 'Blush Pink', hex: '#F7C5D5' },
+        { name: 'Butter', hex: '#FFF3B0' },
+        { name: 'Mint', hex: '#B8EDD8' },
+        { name: 'Lavender', hex: '#D8C8F0' },
+        { name: 'Peach', hex: '#FFD4B8' },
+        { name: 'Sky', hex: '#A8D4EC' },
+        { name: 'Rose', hex: '#F0A0C0' },
+        { name: 'Sage', hex: '#C4DCC0' },
+        { name: 'Lilac', hex: '#E0C8F8' },
+      ];
+
+      // PNG sticker files
+      const STICKER_FILES = ['stickers/stickers1.png', 'stickers/stickers2.png', 'stickers/stickers3.png', 'stickers/stickers4.png', 'stickers/stickers5.png', 'stickers/stickers6.png', 'stickers/stickers7.png', 'stickers/stickers8.png'];
+
+      // Scrapbook background — put this PNG/JPG next to your HTML
+      const SCRAPBOOK_BG = 'scrapbook-bg.jpg';
+
+      /* ===========================
+            STATE
+            =========================== */
+      let state = {
+        totAnswers: [],
+        customColor: null,
+        customStickers: [],
+        quizAnswers: [],
+        currentTot: 0,
+        currentQuiz: 0,
+        result: null,
+      };
+
+      /* ===========================
+            HELPERS
+            =========================== */
+      function updateProgress(step) {
+        document.getElementById('progress-bar').style.transform = `scaleX(${step / 4})`;
+      }
+      function goTo(id) {
+        document.querySelectorAll('.section').forEach((s) => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo(0, 0);
+        const steps = { 'sec-welcome': 0, 'sec-game': 1, 'sec-customize': 2, 'sec-quiz': 3, 'sec-result': 4 };
+        updateProgress(steps[id] || 0);
+      }
+      function darken(hex) {
+        const r = parseInt(hex.slice(1, 3), 16) - 70,
+          g = parseInt(hex.slice(3, 5), 16) - 70,
+          b = parseInt(hex.slice(5, 7), 16) - 70;
+        return `rgb(${Math.max(0, r)},${Math.max(0, g)},${Math.max(0, b)})`;
+      }
+
+      // Build a tot image node — shows img if loads, placeholder if not
+      function makeTotImgNode(src, label) {
+        const box = document.createElement('div');
+        box.className = 'tot-img-box';
+        const img = document.createElement('img');
+        img.alt = label;
+        img.src = src;
+        img.onerror = () => {
+          box.className = 'tot-img-ph';
+          box.textContent = label;
+          img.remove();
+        };
+        box.appendChild(img);
+        return box;
+      }
+
+      /* ===========================
+            THIS OR THAT
+            =========================== */
+      function initTot() {
+        const el = document.getElementById('tot-dots');
+        el.innerHTML = '';
+        TOT_QUESTIONS.forEach((_, i) => {
+          const d = document.createElement('div');
+          d.className = 'dot' + (i === 0 ? ' active' : '');
+          d.id = `tot-dot-${i}`;
+          el.appendChild(d);
+        });
+        renderTot();
+      }
+
+      function renderTot() {
+        const q = TOT_QUESTIONS[state.currentTot];
+        document.getElementById('tot-q').textContent = q.q;
+        document.getElementById('tot-label-a').textContent = q.a;
+        document.getElementById('tot-label-b').textContent = q.b;
+        document.getElementById('tot-count').textContent = `${state.currentTot + 1} / ${TOT_QUESTIONS.length}`;
+
+        // Swap image containers
+        const boxA = document.getElementById('tot-img-a');
+        const boxB = document.getElementById('tot-img-b');
+        const newA = makeTotImgNode(q.aImg, q.a);
+        newA.id = 'tot-img-a';
+        const newB = makeTotImgNode(q.bImg, q.b);
+        newB.id = 'tot-img-b';
+        boxA.replaceWith(newA);
+        boxB.replaceWith(newB);
+
+        document.getElementById('tot-btn-a').classList.remove('chosen');
+        document.getElementById('tot-btn-b').classList.remove('chosen');
+
+        TOT_QUESTIONS.forEach((_, i) => {
+          const d = document.getElementById(`tot-dot-${i}`);
+          d.className = 'dot' + (i < state.currentTot ? ' done' : i === state.currentTot ? ' active' : '');
+        });
+      }
+
+      function pickTot(choice) {
+        const q = TOT_QUESTIONS[state.currentTot];
+        state.totAnswers[state.currentTot] = {
+          choice,
+          q: q.q,
+          text: choice === 0 ? q.a : q.b,
+          img: choice === 0 ? q.aImg : q.bImg,
+          trait: choice === 0 ? q.aTrait : q.bTrait,
+        };
+        document.getElementById(choice === 0 ? 'tot-btn-a' : 'tot-btn-b').classList.add('chosen');
+        setTimeout(() => {
+          if (state.currentTot < TOT_QUESTIONS.length - 1) {
+            state.currentTot++;
+            renderTot();
+          } else {
+            goTo('sec-customize');
+            initCustomize();
+          }
+        }, 420);
+      }
+
+      /* ===========================
+            CUSTOMIZE
+            =========================== */
+      function initCustomize() {
+        state.customColor = null;
+        state.customStickers = [];
+
+        const cg = document.getElementById('color-grid');
+        cg.innerHTML = '';
+        COLORS.forEach((c) => {
+          const sw = document.createElement('button');
+          sw.className = 'color-swatch';
+          sw.style.background = c.hex;
+          sw.style.borderColor = c.hex;
+          sw.title = c.name;
+          sw.onclick = () => pickColor(c, sw);
+          cg.appendChild(sw);
+        });
+
+        const sg = document.getElementById('sticker-grid');
+        sg.innerHTML = '';
+        STICKER_FILES.forEach((src, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'sticker-btn';
+          btn.dataset.src = src;
+          // Image with fallback placeholder
+          const img = document.createElement('img');
+          img.alt = `sticker ${i + 1}`;
+          img.src = src;
+          img.onerror = () => {
+            const ph = document.createElement('div');
+            ph.className = 'sticker-ph';
+            ph.textContent = `sticker${i + 1}.png`;
+            img.replaceWith(ph);
+          };
+          const check = document.createElement('div');
+          check.className = 'sticker-check';
+          check.textContent = '✓';
+          btn.appendChild(img);
+          btn.appendChild(check);
+          btn.onclick = () => pickSticker(src, btn);
+          sg.appendChild(btn);
+        });
+
+        document.getElementById('sticker-hint').textContent = '0 / 5 selected';
+        document.getElementById('customize-next').disabled = true;
+      }
+
+      function pickColor(c, el) {
+        document.querySelectorAll('.color-swatch').forEach((s) => s.classList.remove('selected'));
+        el.classList.add('selected');
+        state.customColor = c;
+        checkCustomizeReady();
+      }
+      function pickSticker(src, btn) {
+        const idx = state.customStickers.indexOf(src);
+        if (idx > -1) {
+          state.customStickers.splice(idx, 1);
+          btn.classList.remove('picked');
+        } else {
+          if (state.customStickers.length >= 5) {
+            const removed = state.customStickers.shift();
+            document.querySelectorAll('.sticker-btn').forEach((b) => {
+              if (b.dataset.src === removed) b.classList.remove('picked');
+            });
+          }
+          state.customStickers.push(src);
+          btn.classList.add('picked');
+        }
+        document.getElementById('sticker-hint').textContent = `${state.customStickers.length} / 5 selected`;
+        checkCustomizeReady();
+      }
+      function checkCustomizeReady() {
+        document.getElementById('customize-next').disabled = !(state.customColor && state.customStickers.length >= 1);
+      }
+      function goToQuiz() {
+        if (!state.customColor || !state.customStickers.length) return;
+        goTo('sec-quiz');
+        initQuiz();
+      }
+
+      /* ===========================
+            QUIZ — MULTIPLE CHOICE STYLE
+            =========================== */
+      function initQuiz() {
+        state.currentQuiz = 0;
+        state.quizAnswers = new Array(QUIZ_QUESTIONS.length).fill(null).map(() => []);
+        buildQuizDots();
+        renderQuiz();
+      }
+      function buildQuizDots() {
+        const el = document.getElementById('quiz-dots');
+        el.innerHTML = '';
+        QUIZ_QUESTIONS.forEach((_, i) => {
+          const d = document.createElement('div');
+          d.className = 'dot' + (i === 0 ? ' active' : '');
+          d.id = `quiz-dot-${i}`;
+          el.appendChild(d);
+        });
+      }
+      function renderQuiz() {
+        const q = QUIZ_QUESTIONS[state.currentQuiz];
+        document.getElementById('quiz-num').textContent = `Question ${state.currentQuiz + 1} of ${QUIZ_QUESTIONS.length}`;
+        document.getElementById('quiz-q').textContent = q.q;
+
+        const optsEl = document.getElementById('quiz-opts');
+        optsEl.innerHTML = '';
+        q.opts.forEach((opt, i) => {
+          const isChecked = state.quizAnswers[state.currentQuiz].includes(i);
+          const label = document.createElement('label');
+          label.className = 'quiz-opt-label' + (isChecked ? ' is-checked' : '');
+          label.innerHTML = `
+                <input type="checkbox" name="quiz_q${state.currentQuiz}" value="${i}"
+                    ${isChecked ? 'checked' : ''}>
+                <div class="checkbox-box"><div class="checkbox-check">✓</div></div>
+                <span>${opt.text}</span>`;
+          label.querySelector('input').addEventListener('change', () => {
+            const idx = state.quizAnswers[state.currentQuiz].indexOf(i);
+            if (idx > -1) {
+              state.quizAnswers[state.currentQuiz].splice(idx, 1);
+              label.classList.remove('is-checked');
+            } else {
+              state.quizAnswers[state.currentQuiz].push(i);
+              label.classList.add('is-checked');
+            }
+            document.getElementById('quiz-next').disabled = state.quizAnswers[state.currentQuiz].length === 0;
+          });
+          optsEl.appendChild(label);
+        });
+
+        document.getElementById('quiz-prev').style.display = state.currentQuiz === 0 ? 'none' : 'inline-flex';
+        const nextBtn = document.getElementById('quiz-next');
+        nextBtn.textContent = state.currentQuiz === QUIZ_QUESTIONS.length - 1 ? 'See My Match!' : 'Next →';
+        nextBtn.disabled = state.quizAnswers[state.currentQuiz].length === 0;
+
+        QUIZ_QUESTIONS.forEach((_, i) => {
+          const d = document.getElementById(`quiz-dot-${i}`);
+          d.className = 'dot' + (i < state.currentQuiz ? ' done' : i === state.currentQuiz ? ' active' : '');
+        });
+      }
+      function quizNext() {
+        if (state.quizAnswers[state.currentQuiz].length === 0) return;
+        if (state.currentQuiz < QUIZ_QUESTIONS.length - 1) {
+          state.currentQuiz++;
+          renderQuiz();
+        } else {
+          calcResult();
+        }
+      }
+      function quizPrev() {
+        if (state.currentQuiz > 0) {
+          state.currentQuiz--;
+          renderQuiz();
+        }
+      }
+
+      /* ===========================
+            CALCULATE RESULT
+            =========================== */
+      function calcResult() {
+        const scores = new Array(MEMBERS.length).fill(0);
+        state.quizAnswers.forEach((ansArray, qi) => {
+          if (!ansArray || ansArray.length === 0) return;
+          ansArray.forEach((ans) => {
+            QUIZ_QUESTIONS[qi].opts[ans].members.forEach((m) => (scores[m] += 3));
+          });
+        });
+        state.totAnswers.forEach((ans) => {
+          if (!ans || !ans.trait) return;
+          ans.trait.forEach((m) => {
+            if (scores[m] !== undefined) scores[m] += 2;
+          });
+        });
+        const maxScore = Math.max(...scores);
+        const topIdx = scores.indexOf(maxScore);
+        const total = scores.reduce((a, b) => a + b, 0) || 1;
+        const pct = Math.round((maxScore / total) * 100);
+        state.result = { member: MEMBERS[topIdx], pct, scores };
+        buildScrapbook();
+        goTo('sec-result');
+        launchConfetti();
+      }
+
+      /* ===========================
+            BUILD SCRAPBOOK
+            =========================== */
+      function buildScrapbook() {
+        const { member, pct } = state.result;
+        // Use default color (Baby Blue) if customColor is not set
+        const color = state.customColor?.hex || '#C8E6F5';
+        const paper = document.getElementById('sb-paper');
+
+        // Background image
+        paper.style.backgroundImage = `url('${SCRAPBOOK_BG}')`;
+
+        const washi1 = `linear-gradient(90deg,${color},${member.color})`;
+        const washi2 = `linear-gradient(90deg,${member.color},${color})`;
+
+        const tagsHTML = member.traits.map((t) => `<span class="sb-tag" style="background:${color};color:${darken(color)}">${t}</span>`).join('');
+
+        // ToT photos row
+        const totPhotosHTML = state.totAnswers
+          .map(
+            (ans, idx) => `
+          <div class="sb-tot-item" data-tot-idx="${idx}" style="position:absolute;width:54px;height:54px;left:${idx * 60}px;top:0">
+            <div class="sb-tot-photo" style="margin:0">
+              <img src="${ans.img}" alt="${ans.text}" onerror="this.style.display='none'" />
+            </div>
+          </div>
+          `,
+          )
+          .join('');
+
+        document.getElementById('sb-content').innerHTML = `
+                <div class="sb-washi" style="background:${washi1}"></div>
+                <div class="sb-header">
+                <div class="sb-title">You match with…</div>
+                <div class="sb-subtitle">Based on your vibe</div>
+                </div>
+                <div class="sb-color-strip" style="background:${washi2}"></div>
+                <div class="sb-photo-frame">
+                <img src="${member.photo}" alt="${member.name}"
+                    onerror="this.parentElement.innerHTML='Unknown'"/>
+                </div>
+                <div class="sb-member-name">${member.name}</div>
+                <div class="sb-match-desc">${member.desc} · ${pct}% match </div>
+                <div class="sb-tags">${tagsHTML}</div>
+                <div class="sb-tot-section">
+                  <div class="sb-tot-photos" style="position:relative;height:54px;margin-bottom:6px">
+                    ${totPhotosHTML}
+                  </div>
+                  <div style="text-align:center;font-family:var(--font-hand);font-size:0.8rem;color:var(--text-mid)">drag and drop</div>
+                </div>
+                <div class="sb-washi" style="background:${washi1}"></div>
+                <div class="sb-color-strip" style="background:${washi2}"></div>
+            `;
+
+        // Make ToT photos and photo-frame draggable
+        setTimeout(() => {
+          document.querySelectorAll('.sb-tot-item').forEach((el) => {
+            makeDraggableInFlow(el, paper);
+          });
+        }, 0);
+
+        // Place draggable PNG stickers (on paper, above overlay)
+        // Remove old stickers
+        paper.querySelectorAll('.sb-sticker').forEach((s) => s.remove());
+        const positions = [
+          { top: '12px', right: '12px', rotate: '8deg' },
+          { top: '70px', left: '8px', rotate: '-6deg' },
+          { bottom: '130px', right: '10px', rotate: '5deg' },
+          { bottom: '60px', left: '10px', rotate: '-10deg' },
+          { top: '270px', right: '8px', rotate: '12deg' },
+        ];
+        state.customStickers.forEach((src, i) => {
+          const el = document.createElement('div');
+          el.className = 'sb-sticker';
+          const pos = positions[i % positions.length];
+          Object.entries(pos).forEach(([k, v]) => {
+            if (k === 'rotate') el.style.transform = `rotate(${v})`;
+            else el.style[k] = v;
+          });
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = 'sticker';
+          img.onerror = () => img.replaceWith(Object.assign(document.createElement('div'), { className: 'sb-sticker-ph' }));
+          el.appendChild(img);
+          paper.appendChild(el);
+          makeDraggable(el, paper);
+        });
+      }
+
+      /* ===========================
+            DRAGGABLE
+            =========================== */
+      function makeDraggable(el, container) {
+        let isDragging = false,
+          startX,
+          startY,
+          origX,
+          origY;
+        const onStart = (e) => {
+          e.preventDefault();
+          isDragging = true;
+          const t = e.touches ? e.touches[0] : e;
+          startX = t.clientX;
+          startY = t.clientY;
+          const re = el.getBoundingClientRect(),
+            rc = container.getBoundingClientRect();
+          origX = re.left - rc.left;
+          origY = re.top - rc.top;
+          if (el.style.position !== 'absolute') {
+            el.style.position = 'absolute';
+          }
+          el.style.left = origX + 'px';
+          el.style.top = origY + 'px';
+          el.style.right = 'auto';
+          el.style.bottom = 'auto';
+          el.style.zIndex = 100;
+        };
+        const onMove = (e) => {
+          if (!isDragging) return;
+          e.preventDefault();
+          const t = e.touches ? e.touches[0] : e;
+          el.style.left = origX + t.clientX - startX + 'px';
+          el.style.top = origY + t.clientY - startY + 'px';
+        };
+        const onEnd = () => {
+          isDragging = false;
+          el.style.zIndex = 10;
+        };
+        el.addEventListener('mousedown', onStart);
+        el.addEventListener('touchstart', onStart, { passive: false });
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('mouseup', onEnd);
+        window.addEventListener('touchend', onEnd);
+      }
+
+      /* ===========================
+            DRAGGABLE IN FLOW
+            (preserves layout with placeholder)
+            =========================== */
+      function makeDraggableInFlow(el, container) {
+        let isDragging = false,
+          startX,
+          startY,
+          origX,
+          origY,
+          placeholder;
+        const onStart = (e) => {
+          e.preventDefault();
+          isDragging = true;
+          const t = e.touches ? e.touches[0] : e;
+          startX = t.clientX;
+          startY = t.clientY;
+
+          const re = el.getBoundingClientRect();
+          const rc = container.getBoundingClientRect();
+          origX = re.left - rc.left;
+          origY = re.top - rc.top;
+
+          // Create placeholder to preserve layout space
+          placeholder = document.createElement('div');
+          placeholder.style.width = re.width + 'px';
+          placeholder.style.height = re.height + 'px';
+          placeholder.style.display = 'inline-block';
+          placeholder.style.visibility = 'hidden';
+          placeholder.style.flexShrink = '0';
+          el.parentNode.insertBefore(placeholder, el);
+
+          // Move element to container (paper) so it floats above everything
+          container.appendChild(el);
+          el.style.position = 'absolute';
+          el.style.left = origX + 'px';
+          el.style.top = origY + 'px';
+          el.style.right = 'auto';
+          el.style.bottom = 'auto';
+          el.style.zIndex = 100;
+          el.style.margin = '0';
+        };
+        const onMove = (e) => {
+          if (!isDragging) return;
+          e.preventDefault();
+          const t = e.touches ? e.touches[0] : e;
+          el.style.left = origX + t.clientX - startX + 'px';
+          el.style.top = origY + t.clientY - startY + 'px';
+        };
+        const onEnd = () => {
+          if (!isDragging) return;
+          isDragging = false;
+          el.style.zIndex = 10;
+          // Remove placeholder after drop
+          if (placeholder && placeholder.parentNode) {
+            placeholder.parentNode.removeChild(placeholder);
+            placeholder = null;
+          }
+        };
+        el.addEventListener('mousedown', onStart);
+        el.addEventListener('touchstart', onStart, { passive: false });
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('mouseup', onEnd);
+        window.addEventListener('touchend', onEnd);
+      }
+
+      /* ===========================
+            CONFETTI
+            =========================== */
+      function launchConfetti() {
+        const c = document.getElementById('confetti-container');
+        c.innerHTML = '';
+        const cols = ['#F7C5D5', '#C8E6F5', '#FFF3B0', '#B8EDD8', '#D8C8F0', '#FFD4B8'];
+        for (let i = 0; i < 80; i++) {
+          const p = document.createElement('div');
+          p.className = 'confetti-piece';
+          p.style.cssText = `left:${Math.random() * 100}%;background:${cols[i % cols.length]};width:${6 + Math.random() * 8}px;height:${6 + Math.random() * 8}px;border-radius:${Math.random() > 0.5 ? '50%' : '2px'};animation-duration:${1.5 + Math.random() * 2}s;animation-delay:${Math.random() * 0.8}s`;
+          c.appendChild(p);
+        }
+        setTimeout(() => (c.innerHTML = ''), 4000);
+      }
+
+      /* ===========================
+            RESTART
+            =========================== */
+      function restartAll() {
+        state = { totAnswers: [], customColor: null, customStickers: [], quizAnswers: [], currentTot: 0, currentQuiz: 0, result: null };
+        initTot();
+        goTo('sec-welcome');
+      }
+
+      window.addEventListener('DOMContentLoaded', initTot);
+    </script>
+  </body>
+</html>
